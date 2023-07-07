@@ -3,12 +3,25 @@ import { Formik, Form, Field } from 'formik';
 import { nanoid } from 'nanoid'
 import * as Yup from "yup";
 import css from './Contact-style.module.css'
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from '../../redux/contSlice';
 
-export const ContactForm = ({ addContact }) => {
+
+export const ContactForm = () => {
+    const dispatch = useDispatch();
+    const contacts = useSelector(state => state.contacts.items);
+
     const handleSubmit = ({ name, number }, { resetForm }) => {
         const id = nanoid();
+        // Перевірка чи вже є контакт з таким іменем
+        const AddedContactCheck = contacts.find(contact => {
+            return contact.name.toLowerCase() === name.toLowerCase();
+        });
+        if (AddedContactCheck) {
+            return alert(`${AddedContactCheck.name} is already in contacts`);
+        };
 
-        addContact({ name, number, id });
+        dispatch(addContact({ id, name, number }));
         resetForm();
     };
 
@@ -35,7 +48,6 @@ export const ContactForm = ({ addContact }) => {
                         name="name"
                         maxLength="20"
                         placeholder="Add the name"
-                        // pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
                         title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
                         required
                     />
@@ -47,7 +59,6 @@ export const ContactForm = ({ addContact }) => {
                         minLength="10"
                         maxLength="11"
                         placeholder="Add the phone number"
-                        // pattern='\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}'
                         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
                         required
                     />
